@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 @Controller
@@ -26,7 +27,8 @@ public class AuthorizeController {
     private String redirectUri;
     @GetMapping("/callback")
     public String callback(@RequestParam(name="code") String code,
-                           @RequestParam(name="state") String state) throws IOException {
+                           @RequestParam(name="state") String state,
+                           HttpServletRequest request) throws IOException {
         AccessTokenDto accessTokenDto = new AccessTokenDto();
         accessTokenDto.setCode(code);
         accessTokenDto.setRedirect_uri(redirectUri);
@@ -36,7 +38,12 @@ public class AuthorizeController {
         String token = githubProvider.getAccessToken(accessTokenDto);  System.out.println(token);
         GithubUser user = githubProvider.getUser(token);
         System.out.println(user.getName());
+        if (user !=null) {
+             request.getSession().setAttribute("user",user);
+             return "redirect:/";
+        } else {
+            return "redirect:/";
+        }
 
-        return "index";
     }
 }
